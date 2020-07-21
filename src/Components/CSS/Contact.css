@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans&display=swap');
+
+.contact-box{
+    display: none;
+    background-color: aliceblue;
+    width: 370px;
+    height: 200px;
+    position: fixed;
+    bottom: 0;
+    right: 0;
+    border: 1px lightgray solid;
+}
+
+.cross{
+    position: absolute;
+    right: 7px;
+    top: 5px;
+    cursor: pointer;
+}
+
+.contact-box p{
+    font-family: 'Open Sans', monospace;
+    padding-left: 20px;
+}
+
+.social{
+    width: 60%;
+    margin: auto;
+}
+
+.contact-box .social a{
+    padding: 0 10px;
+    color: black;
+}

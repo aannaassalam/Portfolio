@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Grenze+Gotisch:wght@900&family=Ubuntu:wght@300&display=swap');
+
+.home-container{
+    background-image: whitesmoke;
+    width: 100%;
+}
+
+.main{
+    width: 80%;
+    margin: 35px auto;
+}
+
+.img-cont{
+    margin: 15px;
+    margin-left: 30px;
+    float: right;
+    position: relative;
+    width: 180px;
+    height: 180px;
+    border: 5px solid yellowgreen;
+    border-radius: 50%;
+}
+
+img{
+    position: absolute;
+    top: 10px;
+    right: 11px;
+    width: 150px;
+    float: right;
+    border: 3px yellowgreen solid;
+    border-radius: 70%;
+}
+
+p{
+    font-size: 18px;
+    color: black;
+    font-family: 'Ubuntu', sans-serif;
+    line-height: 30px;
+}
+strong{
+    font-family: 'Cabin', sans-serif;
+    font-size: 32px;
+    color: rgba(0,0,0,.9);
+}
