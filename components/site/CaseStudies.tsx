@@ -1,10 +1,12 @@
-import Image from "next/image";
 import { useRef } from "react";
 import { CASE_STUDIES } from "@/json/site/content";
 import { gsap, revealChildren, useGsapScope } from "@/lib/motion";
 import { claimPhase, world } from "@/lib/three/world";
 
 type Study = (typeof CASE_STUDIES)[number];
+
+/** Widths of the pre-sized files in public/work, made by scripts/capture-work.mjs. */
+const WORK_WIDTHS = [640, 960, 1280, 1600, 1920];
 
 function Panel({ study }: { study: Study }) {
   return (
@@ -89,14 +91,23 @@ function Panel({ study }: { study: Study }) {
         </div>
 
         <div className="relative" data-panel-visual>
-          {/* The live site itself, not a drawing of it. */}
-          <Image
-            src={study.image}
+          {/* The live site itself, not a drawing of it. Pre-sized static files
+              rather than the image optimizer: no cold transform per size and
+              region, nothing counted against a plan, and the CDN serves them
+              as plain assets. Eager, because this rail slides sideways: a lazy
+              image two panels away would only start loading on arrival. Low
+              priority, so it never competes with the first paint. */}
+          {/* eslint-disable-next-line @next/next/no-img-element -- static responsive set, see above */}
+          <img
+            src={`/work/${study.image}-1280.webp`}
+            srcSet={WORK_WIDTHS.map((w) => `/work/${study.image}-${w}.webp ${w}w`).join(", ")}
+            sizes="(min-width: 1024px) min(50vw, 44rem), 100vw"
             alt={`${study.title} home page`}
-            width={2560}
-            height={1760}
-            quality={90}
-            sizes="(min-width: 1024px) 50vw, 100vw"
+            width={1280}
+            height={880}
+            loading="eager"
+            fetchPriority="low"
+            decoding="async"
             className="h-auto w-full rounded-2xl border border-ink-700 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.85)]"
           />
         </div>

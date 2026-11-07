@@ -132,10 +132,7 @@ export default function Philosophy() {
   }, []);
 
   return (
-    <section
-      ref={scope}
-      className="relative overflow-hidden py-28 md:py-40"
-    >
+    <section ref={scope} className="relative overflow-hidden py-28 md:py-40">
       <div className="shell">
         <SectionIntro
           eyebrow={PHILOSOPHY.eyebrow}

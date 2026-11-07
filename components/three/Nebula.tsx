@@ -131,7 +131,10 @@ export default function Nebula({ energy, veil }: NebulaProps) {
     // page does. Integrated here rather than scaled in the shader, so a burst
     // of energy nudges the pattern instead of teleporting it.
     phase.current += dt * (0.02 + flow * 0.04);
-    (u.uDrift.value as THREE.Vector2).set(Math.cos(phase.current) * 3, Math.sin(phase.current) * 3);
+    (u.uDrift.value as THREE.Vector2).set(
+      Math.cos(phase.current) * 3,
+      Math.sin(phase.current) * 3
+    );
     // Only the twinkle reads the clock; wrapped so it stays precise for days.
     u.uTime.value = (u.uTime.value + dt) % 1000;
     u.uFlow.value = flow;

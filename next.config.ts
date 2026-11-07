@@ -9,9 +9,22 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*"
       }
-    ],
-    // The case-study screenshots are photographic; the default 75 smears them.
-    qualities: [75, 90]
+    ]
+  },
+  async headers() {
+    return [
+      {
+        // Pre-sized screenshots in public/work: let browsers keep them for a
+        // week instead of revalidating on every visit.
+        source: "/work/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=604800, stale-while-revalidate=86400"
+          }
+        ]
+      }
+    ];
   },
   compress: true,
   compiler: {

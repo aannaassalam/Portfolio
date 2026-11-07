@@ -6,18 +6,14 @@
       {
         "rule": "ai-color-palette",
         "value": "*",
-        "files": [
-          "components/site/Process.tsx"
-        ],
+        "files": ["components/site/Process.tsx"],
         "createdAt": "2026-11-07T08:53:47.328Z",
         "reason": "brand-source/BRAND.md names violet #8B5CF6 as the screen accent; line predates this session and matches the theme tokens"
       },
       {
         "rule": "ai-color-palette",
         "value": "*",
-        "files": [
-          "components/site/Principles.tsx"
-        ],
+        "files": ["components/site/Principles.tsx"],
         "createdAt": "2026-11-07T08:53:47.392Z",
         "reason": "brand-source/BRAND.md names violet #8B5CF6 as the screen accent; line predates this session and matches the theme tokens"
       }

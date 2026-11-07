@@ -248,7 +248,7 @@ export const CASE_STUDIES = [
     result:
       "Every vertical books through the same order flow, and the team runs the whole operation from one panel.",
     stack: ["Next.js", "React Native", "Node.js", "MongoDB"],
-    image: "/work/flexi-agency.webp",
+    image: "flexi-agency",
     links: [
       { label: "Website", href: "https://flexiagency.net" },
       {
@@ -274,7 +274,7 @@ export const CASE_STUDIES = [
     result:
       "A session ends with its action items already assigned, and coach and client look at the same list on the web, in the extension and on the phone.",
     stack: ["Next.js", "React Native", "Node.js", "LLM APIs"],
-    image: "/work/coachiatry.webp",
+    image: "coachiatry",
     links: [
       { label: "Web app", href: "https://app.coachiatry.com" },
       {
@@ -300,8 +300,10 @@ export const CASE_STUDIES = [
     result:
       "New stories go live within a minute of the studio publishing them, and every photograph arrives sized for the phone it is seen on.",
     stack: ["Next.js", "Firebase", "Cloudinary"],
-    image: "/work/sd-photography.webp",
-    links: [{ label: "Website", href: "https://sdphotography.synkinnovations.in" }]
+    image: "sd-photography",
+    links: [
+      { label: "Website", href: "https://sdphotography.synkinnovations.in" }
+    ]
   },
   {
     number: "04",
@@ -316,7 +318,7 @@ export const CASE_STUDIES = [
     result:
       "It opens on any phone with nothing to maintain, and a customer arrives knowing what to ask for.",
     stack: ["HTML", "CSS"],
-    image: "/work/yuvi-designs.webp",
+    image: "yuvi-designs",
     links: [{ label: "Website", href: "https://yuvi-designs.vercel.app" }]
   }
 ] as const;

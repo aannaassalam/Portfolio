@@ -144,9 +144,12 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
     // The city exists for the approach and the flythrough. Climbing out, it
     // fades rather than lingering below as a fogged silhouette against the sky.
     cityPresence.current +=
-      ((phase === "city" || phase === "transit" ? 1 : 0) - cityPresence.current) * ease;
+      ((phase === "city" || phase === "transit" ? 1 : 0) -
+        cityPresence.current) *
+      ease;
     // The flythrough is scrubbed, so it tracks tighter than the handovers.
-    cityT.current += (clamp01(world.city) - cityT.current) * (1 - Math.exp(-6 * dt));
+    cityT.current +=
+      (clamp01(world.city) - cityT.current) * (1 - Math.exp(-6 * dt));
 
     // Camera. Every phase is a position and a point to look at; the city adds
     // a bank on the way in that levels off once the links resolve.
@@ -192,7 +195,8 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
       system.current.rotation.y += dt * 0.11;
       // Cursor tilts the whole structure rather than swinging the camera —
       // reads as inspecting an object, not a shaky handheld shot.
-      system.current.rotation.x += (s.py * 0.18 - system.current.rotation.x) * ease;
+      system.current.rotation.x +=
+        (s.py * 0.18 - system.current.rotation.x) * ease;
     }
 
     // The lattice counter-rotates against the system so the two shells shear
@@ -220,8 +224,7 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
       rings.current.rotation.x += dt * 0.02;
       rings.current.traverse((child) => {
         const material = (child as THREE.Mesh).material as
-          | THREE.Material
-          | undefined;
+          THREE.Material | undefined;
         if (material && "opacity" in material) {
           material.opacity = 0.34 * (1 - sp) * p * sh;
         }
@@ -237,8 +240,7 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
 
     // Key light dims as the core disperses, and flares a little on fast scroll.
     if (key.current) {
-      key.current.intensity =
-        14 * (1 - sp * 0.6) * (1 + flow * 0.35) * p * sh;
+      key.current.intensity = 14 * (1 - sp * 0.6) * (1 + flow * 0.35) * p * sh;
     }
   });
 
@@ -248,7 +250,11 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
           ever a key light, so the frame never collapses into one purple. */}
       <fogExp2 attach="fog" args={["#05050c", 0.028]} />
       <ambientLight intensity={0.45} color="#5A6BFF" />
-      <directionalLight position={[6, 12, 4]} intensity={0.55} color="#C4B5FD" />
+      <directionalLight
+        position={[6, 12, 4]}
+        intensity={0.55}
+        color="#C4B5FD"
+      />
 
       <Nebula energy={energy} veil={veil} />
 
@@ -283,7 +289,12 @@ export default function WorldScene({ tier }: { tier: "low" | "high" }) {
       )}
 
       <group ref={system}>
-        <pointLight ref={key} position={[2.5, 2, 3]} intensity={14} color="#8B5CF6" />
+        <pointLight
+          ref={key}
+          position={[2.5, 2, 3]}
+          intensity={14}
+          color="#8B5CF6"
+        />
         <pointLight position={[-3, -1.5, -2]} intensity={6} color="#C4B5FD" />
 
         {/* Geodesic shell. Detail 1 keeps it to 80 faces — enough triangulation

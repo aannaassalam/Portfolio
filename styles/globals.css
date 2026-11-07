@@ -156,7 +156,8 @@
     to bottom,
     transparent,
     color-mix(in oklab, var(--color-ink-900) 72%, transparent) 14rem,
-    color-mix(in oklab, var(--color-ink-900) 72%, transparent) calc(100% - 14rem),
+    color-mix(in oklab, var(--color-ink-900) 72%, transparent)
+      calc(100% - 14rem),
     transparent
   );
 }
