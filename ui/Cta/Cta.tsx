@@ -23,7 +23,9 @@ export default function Cta({
   ...props
 }: CtaProps) {
   const external = href.startsWith("http") || href.startsWith("mailto:");
-  const Tag = external ? "a" : Link;
+  // Same-page anchors stay plain anchors: the smooth scroller handles them,
+  // and routing them through Next's Link would add a second, competing scroll.
+  const Tag = external || href.startsWith("#") ? "a" : Link;
 
   return (
     <Tag

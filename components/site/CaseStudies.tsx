@@ -100,7 +100,9 @@ function Panel({ study }: { study: Study }) {
           {/* eslint-disable-next-line @next/next/no-img-element -- static responsive set, see above */}
           <img
             src={`/work/${study.image}-1280.webp`}
-            srcSet={WORK_WIDTHS.map((w) => `/work/${study.image}-${w}.webp ${w}w`).join(", ")}
+            srcSet={WORK_WIDTHS.map(
+              (w) => `/work/${study.image}-${w}.webp ${w}w`
+            ).join(", ")}
             sizes="(min-width: 1024px) min(50vw, 44rem), 100vw"
             alt={`${study.title} home page`}
             width={1280}
@@ -123,6 +125,7 @@ function Panel({ study }: { study: Study }) {
  */
 export default function CaseStudies() {
   const track = useRef<HTMLDivElement>(null);
+  const stage = useRef<HTMLDivElement>(null);
 
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
     // Section heading reveals at every breakpoint — it must never depend on
@@ -145,7 +148,9 @@ export default function CaseStudies() {
           trigger: scope,
           start: "top top",
           end: () => `+=${distance()}`,
-          pin: true,
+          // The inner stage is pinned, so the section itself keeps the full
+          // height of the run and `#work` means its start.
+          pin: stage.current,
           scrub: 0.8,
           invalidateOnRefresh: true,
           // The section claim above measures the unpinned height; this one
@@ -190,11 +195,8 @@ export default function CaseStudies() {
   }, []);
 
   return (
-    <section
-      ref={scope}
-      id="work"
-      className="relative overflow-hidden lg:h-screen"
-    >
+    <section ref={scope} id="work" className="relative">
+      <div ref={stage} className="relative overflow-hidden lg:h-screen">
       {/* Pinned above the rail on lg, so it condenses to a single line —
           a full-size heading would eat the panel's vertical budget. */}
       <div className="shell pb-10 pt-28 lg:absolute lg:left-0 lg:right-0 lg:top-0 lg:z-10 lg:flex lg:items-baseline lg:gap-5 lg:pb-0 lg:pt-24">
@@ -216,6 +218,7 @@ export default function CaseStudies() {
         {CASE_STUDIES.map((study) => (
           <Panel key={study.number} study={study} />
         ))}
+      </div>
       </div>
     </section>
   );

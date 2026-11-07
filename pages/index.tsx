@@ -51,6 +51,7 @@ export default function Home() {
 
       <a
         href="#main"
+        onClick={() => document.getElementById("main")?.focus()}
         className="sr-only focus:not-sr-only focus:fixed focus:left-6 focus:top-6 focus:z-[60] focus:rounded-full focus:bg-violet-600 focus:px-5 focus:py-3 focus:text-sm focus:text-white"
       >
         Skip to content
@@ -58,7 +59,7 @@ export default function Home() {
 
       <Nav />
 
-      <main id="main" className="relative z-10">
+      <main id="main" tabIndex={-1} className="relative z-10 outline-none">
         <Hero />
         <Philosophy />
         <Services />
