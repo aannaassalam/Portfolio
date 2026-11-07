@@ -1,11 +1,12 @@
+import Image from "next/image";
 import { useRef } from "react";
 import { CASE_STUDIES } from "@/json/site/content";
 import { gsap, revealChildren, useGsapScope } from "@/lib/motion";
-import ProjectVisual from "./ProjectVisual";
+import { claimPhase, world } from "@/lib/three/world";
 
 type Study = (typeof CASE_STUDIES)[number];
 
-function Panel({ study, index }: { study: Study; index: number }) {
+function Panel({ study }: { study: Study }) {
   return (
     <article
       data-panel
@@ -54,17 +55,6 @@ function Panel({ study, index }: { study: Study; index: number }) {
             ))}
           </dl>
 
-          <ul className="mt-8 flex flex-wrap gap-x-6 gap-y-4" data-panel-item>
-            {study.metrics.map((metric) => (
-              <li key={metric.label}>
-                <span className="block text-2xl font-medium tracking-tight text-chalk">
-                  {metric.value}
-                </span>
-                <span className="eyebrow mt-1 block">{metric.label}</span>
-              </li>
-            ))}
-          </ul>
-
           <ul
             className="mt-8 flex flex-wrap gap-2 border-t border-ink-700 pt-6"
             data-panel-item
@@ -78,13 +68,36 @@ function Panel({ study, index }: { study: Study; index: number }) {
               </li>
             ))}
           </ul>
+
+          {/* The live product. Real links, so the proof is one tap away. */}
+          <ul className="mt-5 flex flex-wrap gap-x-5 gap-y-1" data-panel-item>
+            {study.links.map((link) => (
+              <li key={link.href}>
+                <a
+                  href={link.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex min-h-11 items-center gap-1.5 text-sm text-chalk transition-colors duration-300 hover:text-violet-300"
+                >
+                  {link.label}
+                  <span aria-hidden>↗</span>
+                  <span className="sr-only"> (opens in a new tab)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
         </div>
 
         <div className="relative" data-panel-visual>
-          <ProjectVisual
-            accent={study.accent}
-            seed={index + 1}
-            className="h-auto w-full"
+          {/* The live site itself, not a drawing of it. */}
+          <Image
+            src={study.image}
+            alt={`${study.title} home page`}
+            width={2560}
+            height={1760}
+            quality={90}
+            sizes="(min-width: 1024px) 50vw, 100vw"
+            className="h-auto w-full rounded-2xl border border-ink-700 shadow-[0_30px_80px_-30px_rgba(0,0,0,0.85)]"
           />
         </div>
       </div>
@@ -104,6 +117,7 @@ export default function CaseStudies() {
     // Section heading reveals at every breakpoint — it must never depend on
     // the desktop-only horizontal branch running.
     revealChildren(scope, "top 85%");
+    claimPhase(scope, "drift");
 
     const media = gsap.matchMedia();
 
@@ -122,7 +136,13 @@ export default function CaseStudies() {
           end: () => `+=${distance()}`,
           pin: true,
           scrub: 0.8,
-          invalidateOnRefresh: true
+          invalidateOnRefresh: true,
+          // The section claim above measures the unpinned height; this one
+          // covers the pinned run, so scrolling back up into it never shows
+          // the next section's camera.
+          onToggle: (self) => {
+            if (self.isActive) world.phase = "drift";
+          }
         }
       });
 
@@ -162,7 +182,7 @@ export default function CaseStudies() {
     <section
       ref={scope}
       id="work"
-      className="relative overflow-hidden seam bg-ink-950 lg:h-screen"
+      className="relative overflow-hidden lg:h-screen"
     >
       {/* Pinned above the rail on lg, so it condenses to a single line —
           a full-size heading would eat the panel's vertical budget. */}
@@ -182,8 +202,8 @@ export default function CaseStudies() {
         ref={track}
         className="flex flex-col gap-24 pb-28 lg:h-screen lg:flex-row lg:gap-0 lg:pb-0 lg:pt-32"
       >
-        {CASE_STUDIES.map((study, index) => (
-          <Panel key={study.number} study={study} index={index} />
+        {CASE_STUDIES.map((study) => (
+          <Panel key={study.number} study={study} />
         ))}
       </div>
     </section>

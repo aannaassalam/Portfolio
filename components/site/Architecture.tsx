@@ -1,31 +1,31 @@
-import dynamic from "next/dynamic";
-import { useRef } from "react";
 import { ARCHITECTURE } from "@/json/site/content";
 import { gsap, useGsapScope } from "@/lib/motion";
-
-const ArchitectureCanvas = dynamic(
-  () => import("@/components/three/ArchitectureCanvas"),
-  { ssr: false }
-);
+import { claimPhase, world } from "@/lib/three/world";
 
 /**
  * The flythrough. Scroll is the camera dolly: an overview of separate
- * structures at the top, one connected platform by the bottom.
+ * structures at the top, one connected platform by the bottom. The city is
+ * part of the page-wide scene; this section only drives the travel.
  */
 export default function Architecture() {
-  const progress = useRef(0);
-
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
-    gsap.to(progress, {
-      current: 1,
-      ease: "none",
-      scrollTrigger: {
-        trigger: scope,
-        start: "top top",
-        end: "bottom bottom",
-        scrub: 0.6
+    claimPhase(scope, "city");
+
+    gsap.fromTo(
+      world,
+      { city: 0 },
+      {
+        city: 1,
+        ease: "none",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: scope,
+          start: "top top",
+          end: "bottom bottom",
+          scrub: 0.6
+        }
       }
-    });
+    );
 
     gsap.fromTo(
       scope.querySelectorAll("[data-arch-line]"),
@@ -60,12 +60,10 @@ export default function Architecture() {
   }, []);
 
   return (
-    <section ref={scope} className="relative h-[320vh] bg-ink-950">
+    <section ref={scope} className="relative h-[320vh]">
       <div className="sticky top-0 h-screen overflow-hidden">
-        <ArchitectureCanvas progress={progress} />
-
         {/* Vignette keeps the type legible wherever the camera happens to be. */}
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,#050505_0%,rgba(5,5,5,0.55)_26%,rgba(5,5,5,0.35)_50%,rgba(5,5,5,0.72)_80%,#050505_97%)]" />
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_bottom,transparent_0%,rgba(5,5,5,0.5)_22%,rgba(5,5,5,0.3)_50%,rgba(5,5,5,0.78)_80%,rgba(5,5,5,0.82)_93%,transparent_100%)]" />
 
         <div className="shell absolute inset-x-0 top-1/2 -translate-y-1/2">
           <p className="eyebrow" data-arch-line>

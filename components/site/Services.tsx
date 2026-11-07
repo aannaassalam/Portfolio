@@ -1,14 +1,9 @@
-import dynamic from "next/dynamic";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { SERVICES } from "@/json/site/content";
 import { ScrollTrigger, useGsapScope, useReducedMotion } from "@/lib/motion";
 import type { FormationName } from "@/lib/three/formations";
+import { claimPhase, world } from "@/lib/three/world";
 import { cx } from "@/lib/utils";
-
-const ServicesCanvas = dynamic(
-  () => import("@/components/three/ServicesCanvas"),
-  { ssr: false }
-);
 
 function ServiceBody({ service }: { service: (typeof SERVICES)[number] }) {
   return (
@@ -35,9 +30,22 @@ function ServiceBody({ service }: { service: (typeof SERVICES)[number] }) {
 
 export default function Services() {
   const [active, setActive] = useState(0);
+  const current = useRef(0);
+  const sticky = useRef<HTMLDivElement>(null);
+  const slot = useRef<HTMLDivElement>(null);
   const reduced = useReducedMotion();
 
+  const select = (index: number) => {
+    current.current = index;
+    world.formation = SERVICES[index].id as FormationName;
+    setActive(index);
+  };
+
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
+    claimPhase(scope, "services", () => {
+      world.formation = SERVICES[current.current].id as FormationName;
+    });
+
     // One trigger per step. Six state updates for the whole section — the
     // per-frame work stays in the render loop, not in React.
     scope
@@ -47,15 +55,37 @@ export default function Services() {
           trigger: step,
           start: "top center",
           end: "bottom center",
-          onEnter: () => setActive(index),
-          onEnterBack: () => setActive(index)
+          onEnter: () => select(index),
+          onEnterBack: () => select(index)
         });
       });
   }, []);
 
+  useEffect(() => {
+    // The object is drawn by the page-wide scene, so the layout has to tell
+    // it where the empty square sits once this container is stuck at the top.
+    const measure = () => {
+      const box = sticky.current;
+      const el = slot.current;
+      if (!box || !el) return;
+      const r = el.getBoundingClientRect();
+      const b = box.getBoundingClientRect();
+      world.slot = {
+        x: (r.left + r.width / 2) / window.innerWidth,
+        y: (r.top - b.top + r.height / 2) / window.innerHeight,
+        size: Math.min(r.width, r.height) / window.innerHeight
+      };
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(document.documentElement);
+    if (slot.current) observer.observe(slot.current);
+    return () => observer.disconnect();
+  }, [reduced]);
+
   if (reduced) {
     return (
-      <section id="services" className="bg-ink-950 py-28">
+      <section id="services" className="py-28">
         <div className="shell">
           <p className="eyebrow">What we engineer</p>
           <h2 className="mt-6 max-w-2xl text-[clamp(2rem,4.4vw,3.75rem)] font-medium leading-[1.05] tracking-[-0.03em]">
@@ -85,10 +115,13 @@ export default function Services() {
     <section
       ref={scope}
       id="services"
-      className="relative bg-ink-950"
+      className="relative"
       aria-label="What we engineer"
     >
-      <div className="shell sticky top-0 flex h-screen flex-col justify-center overflow-hidden">
+      <div
+        ref={sticky}
+        className="shell sticky top-0 flex h-screen flex-col justify-center overflow-hidden"
+      >
         <div className="grid items-center gap-8 pt-20 lg:grid-cols-[1fr_1.05fr] lg:gap-16">
           <div>
             <p className="eyebrow">What we engineer</p>
@@ -135,10 +168,12 @@ export default function Services() {
             </ol>
           </div>
 
-          <div className="relative order-first aspect-square w-full lg:order-none">
-            <ServicesCanvas formation={SERVICES[active].id as FormationName} />
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_45%,#050505_78%)]" />
-          </div>
+          {/* The discipline's shape is drawn here by the page-wide scene. */}
+          <div
+            ref={slot}
+            aria-hidden
+            className="order-first aspect-square w-full lg:order-none"
+          />
         </div>
       </div>
 

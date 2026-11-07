@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TECHNOLOGIES, TECH_EDGES } from "@/json/site/content";
 import { revealChildren, useGsapScope } from "@/lib/motion";
+import { claimPhase } from "@/lib/three/world";
 import { cx } from "@/lib/utils";
 
 const VIEW = { width: 1000, height: 560 };
@@ -18,10 +19,10 @@ const point = (index: number) => ({
 export default function TechStack() {
   const [focused, setFocused] = useState<number | null>(null);
 
-  const scope = useGsapScope<HTMLElement>(
-    ({ scope }) => revealChildren(scope),
-    []
-  );
+  const scope = useGsapScope<HTMLElement>(({ scope }) => {
+    revealChildren(scope);
+    claimPhase(scope, "drift");
+  }, []);
 
   const isLit = (index: number) =>
     focused === null ||
@@ -34,7 +35,7 @@ export default function TechStack() {
   return (
     <section
       ref={scope}
-      className="grain relative overflow-hidden seam bg-ink-900 py-28 md:py-36"
+      className="veil relative overflow-hidden py-28 md:py-36"
     >
       <div className="shell">
         <div className="flex flex-wrap items-end justify-between gap-6">

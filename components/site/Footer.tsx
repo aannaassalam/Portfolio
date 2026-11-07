@@ -1,9 +1,12 @@
 import { BRAND, FOOTER } from "@/json/site/content";
 import { gsap, useGsapScope } from "@/lib/motion";
+import { claimPhase } from "@/lib/three/world";
 import Wordmark from "./Wordmark";
 
 export default function Footer() {
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
+    claimPhase(scope, "footer");
+
     gsap.fromTo(
       scope.querySelector("[data-footer-line]"),
       { scaleX: 0 },
@@ -17,7 +20,7 @@ export default function Footer() {
   }, []);
 
   return (
-    <footer ref={scope} className="relative bg-ink-950 pb-12 pt-20">
+    <footer ref={scope} className="relative z-10 pb-12 pt-20">
       <span
         aria-hidden
         data-footer-line

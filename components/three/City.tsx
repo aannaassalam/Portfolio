@@ -1,5 +1,4 @@
 import { useFrame } from "@react-three/fiber";
-import { Bloom, EffectComposer } from "@react-three/postprocessing";
 import {
   useEffect,
   useLayoutEffect,
@@ -10,32 +9,31 @@ import {
 import * as THREE from "three";
 import { seededRandom } from "@/lib/three/formations";
 import { createFacadeMaterial } from "@/lib/three/facade";
+import { CITY } from "@/lib/three/world";
 import { useScrollEnergy } from "@/lib/motion";
 
-interface ArchitectureSceneProps {
-  /** 0–1 travel through the architecture, driven by scroll. */
+interface CityProps {
+  /** 0–1 travel through the architecture, already smoothed. */
   progress: RefObject<number>;
+  /** 0–1 how much of the city exists right now, already smoothed. */
+  presence: RefObject<number>;
   tier: "low" | "high";
 }
 
 /**
- * The system-architecture flythrough: separate structures at the start,
- * wired into one platform by the end of the scroll.
+ * The system architecture: separate structures at the start, wired into one
+ * platform by the end of the flythrough. Positioned at CITY so it sits far
+ * below the core; the camera work lives in WorldScene.
  *
  * Built in two passes so bloom has something to bite on. Most towers are
  * dark, lit only by the scene; a minority are emissive and drawn with an
  * unlit material so their values stay above the bloom threshold. A city
  * where everything glows reads as noise — the contrast between dark bulk
  * and a few hot towers is what makes it read as depth.
- *
- * Colour follows the same logic: a violet key against a midnight-blue fill,
- * so shadows stay blue and highlights stay brand-violet instead of the whole
- * frame collapsing into one purple wash.
  */
-export default function ArchitectureScene({
-  progress,
-  tier
-}: ArchitectureSceneProps) {
+export default function City({ progress, presence, tier }: CityProps) {
+  const root = useRef<THREE.Group>(null);
+  const ground = useRef<THREE.MeshStandardMaterial>(null);
   const dark = useRef<THREE.InstancedMesh>(null);
   const lit = useRef<THREE.InstancedMesh>(null);
   const links = useRef<THREE.LineSegments>(null);
@@ -139,31 +137,55 @@ export default function ArchitectureScene({
 
   useEffect(() => () => pulseSprite.dispose(), [pulseSprite]);
 
-  const darkFacade = useMemo(
-    () =>
-      createFacadeMaterial({
-        color: "#171334",
-        lit: "#7E6BD8",
-        occupancy: 0.14,
-        glow: 0.35,
-        roughness: 0.6,
-        metalness: 0.35
-      }),
-    []
-  );
+  // The ground is a plane, and a plane has an edge. Fogged, that edge is a
+  // dark silhouette cut straight across whatever sky is behind it. Fading the
+  // plane out toward its rim means there is no edge to see from any angle.
+  const groundFade = useMemo(() => {
+    const canvas = document.createElement("canvas");
+    canvas.width = canvas.height = 256;
+    const ctx = canvas.getContext("2d");
+    if (ctx) {
+      const grad = ctx.createRadialGradient(128, 128, 0, 128, 128, 128);
+      // Solid only under the towers (they reach 16% of the half-size), then
+      // a long fade: from above, the ground has to read as a soft pool of
+      // dark, never as a disc with a rim.
+      grad.addColorStop(0, "rgba(255,255,255,1)");
+      grad.addColorStop(0.18, "rgba(255,255,255,1)");
+      grad.addColorStop(0.62, "rgba(255,255,255,0)");
+      grad.addColorStop(1, "rgba(255,255,255,0)");
+      ctx.fillStyle = grad;
+      ctx.fillRect(0, 0, 256, 256);
+    }
+    return new THREE.CanvasTexture(canvas);
+  }, []);
 
-  const litFacade = useMemo(
-    () =>
-      createFacadeMaterial({
-        color: "#1E1858",
-        lit: "#A98CFF",
-        occupancy: 0.48,
-        glow: 1.15,
-        roughness: 0.42,
-        metalness: 0.5
-      }),
-    []
-  );
+  useEffect(() => () => groundFade.dispose(), [groundFade]);
+
+  const darkFacade = useMemo(() => {
+    const material = createFacadeMaterial({
+      color: "#171334",
+      lit: "#7E6BD8",
+      occupancy: 0.14,
+      glow: 0.35,
+      roughness: 0.6,
+      metalness: 0.35
+    });
+    material.transparent = true;
+    return material;
+  }, []);
+
+  const litFacade = useMemo(() => {
+    const material = createFacadeMaterial({
+      color: "#1E1858",
+      lit: "#A98CFF",
+      occupancy: 0.48,
+      glow: 1.15,
+      roughness: 0.42,
+      metalness: 0.5
+    });
+    material.transparent = true;
+    return material;
+  }, []);
 
   useEffect(
     () => () => {
@@ -208,27 +230,22 @@ export default function ArchitectureScene({
     place(lit, litIndex, true);
   }, [towers, litIndex, darkIndex]);
 
-  useFrame((state, delta) => {
-    const dt = Math.min(delta, 0.05);
+  useFrame((state) => {
     const t = Math.min(Math.max(progress.current ?? 0, 0), 1);
     const flow = Math.min(Math.max(energy.current ?? 0, 0), 1);
-    const ease = 1 - Math.exp(-6 * dt);
+    const here = Math.min(Math.max(presence.current ?? 1, 0), 1);
 
-    // Descend from an overview into the structure, then level out inside it.
-    const targetZ = 14 - t * 26;
-    const targetY = 7.5 - t * 5.6;
-    state.camera.position.z += (targetZ - state.camera.position.z) * ease;
-    state.camera.position.y += (targetY - state.camera.position.y) * ease;
-    state.camera.position.x +=
-      (state.pointer.x * 1.6 - state.camera.position.x) * ease;
-    state.camera.lookAt(0, 1.4 + (1 - t) * 0.8, targetZ - 12);
-    // Roll must come AFTER lookAt, which writes the whole quaternion.
-    // A slight bank on the way in, levelling off once the links resolve.
-    state.camera.rotation.z = (1 - t) * 0.07 + state.pointer.x * 0.02;
+    // Nothing to draw, nothing drawn: the whole group skips the render.
+    if (root.current) root.current.visible = here > 0.01;
+    // Through the mesh refs: the facade materials are attached to them.
+    for (const mesh of [dark.current, lit.current]) {
+      if (mesh) (mesh.material as THREE.Material).opacity = here;
+    }
+    if (ground.current) ground.current.opacity = here;
 
     // Connections resolve only in the final third — the payoff of the section.
     const wired = Math.max(0, (t - 0.45) / 0.55);
-    if (linkMaterial.current) linkMaterial.current.opacity = wired * 0.5;
+    if (linkMaterial.current) linkMaterial.current.opacity = wired * 0.5 * here;
     if (links.current) links.current.visible = t > 0.45;
 
     // Data running the links once they exist. This is what turns a static
@@ -246,22 +263,14 @@ export default function ArchitectureScene({
       pulseAttr.current.needsUpdate = true;
     }
     if (pulseMat.current) {
-      pulseMat.current.opacity = wired * (0.85 + flow * 0.15);
+      pulseMat.current.opacity = wired * (0.85 + flow * 0.15) * here;
       pulseMat.current.size = 0.16 + flow * 0.06;
     }
   });
 
   return (
-    <>
-      <fogExp2 attach="fog" args={["#04040c", 0.03]} />
-      {/* Midnight-blue ambient keeps shadows blue; the violet key is the only
-          warm light, so the two never merge into one flat purple. */}
-      <ambientLight intensity={0.5} color="#5A6BFF" />
-      <directionalLight
-        position={[6, 12, 4]}
-        intensity={0.55}
-        color="#C4B5FD"
-      />
+    <group ref={root} position={CITY}>
+      {/* The violet key and the blue fill travel with the city. */}
       <pointLight
         position={[0, 6, -6]}
         intensity={22}
@@ -275,11 +284,13 @@ export default function ArchitectureScene({
         color="#3B4BCC"
       />
 
-      {/* Structural mass: dark, lit only by the scene. */}
+      {/* Culling is off on purpose: an instanced mesh is culled by its unit
+          box at the group origin, which leaves the frame once the camera is
+          inside the city, and the whole skyline would vanish with it. */}
       <instancedMesh
         ref={dark}
         args={[undefined, undefined, darkIndex.length]}
-        castShadow={false}
+        frustumCulled={false}
       >
         <boxGeometry args={[1, 1, 1]} />
         <primitive object={darkFacade} attach="material" />
@@ -290,13 +301,13 @@ export default function ArchitectureScene({
       <instancedMesh
         ref={lit}
         args={[undefined, undefined, litIndex.length]}
-        castShadow={false}
+        frustumCulled={false}
       >
         <boxGeometry args={[1, 1, 1]} />
         <primitive object={litFacade} attach="material" />
       </instancedMesh>
 
-      <lineSegments ref={links}>
+      <lineSegments ref={links} frustumCulled={false}>
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
@@ -313,7 +324,7 @@ export default function ArchitectureScene({
         />
       </lineSegments>
 
-      <points>
+      <points frustumCulled={false}>
         <bufferGeometry>
           <bufferAttribute
             ref={pulseAttr}
@@ -339,25 +350,14 @@ export default function ArchitectureScene({
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.01, 0]}>
         <planeGeometry args={[140, 140]} />
         <meshStandardMaterial
+          ref={ground}
           color="#05050c"
           roughness={0.72}
           metalness={0.5}
+          alphaMap={groundFade}
+          transparent
         />
       </mesh>
-
-      {/* Bloom only — no other passes. The threshold sits above the structural
-          towers, so only the hot ones and the pulses flare. Skipped on the low
-          tier, where the extra fill cost is not worth it. */}
-      {tier === "high" && (
-        <EffectComposer enableNormalPass={false}>
-          <Bloom
-            intensity={0.55}
-            luminanceThreshold={0.62}
-            luminanceSmoothing={0.2}
-            mipmapBlur
-          />
-        </EffectComposer>
-      )}
-    </>
+    </group>
   );
 }

@@ -230,89 +230,94 @@ export const TECH_EDGES: [number, number][] = [
 ];
 
 /**
- * PLACEHOLDER PROJECT DATA — every metric below is illustrative.
- * Replace with real, verifiable numbers before this site goes live.
+ * Real work. Problem, approach and result are descriptive on purpose; there
+ * are no numbers here because none have been measured. Links are the live
+ * product.
  */
 export const CASE_STUDIES = [
   {
     number: "01",
-    sector: "Fintech",
-    title: "Financial planning platform",
+    sector: "Travel",
+    title: "Flexi Agency",
     summary:
-      "A scalable financial planning platform designed around intelligent workflows.",
+      "Flights, hotels, buses, cars, transfers and property across the DRC, booked from one platform on the web and in a native app.",
     problem:
-      "Advisors ran client plans across four disconnected tools, re-keying the same data and reconciling it by hand.",
+      "One agency sells nine kinds of travel and property across the Congo, in French, priced in USD, CDF or EUR and mostly paid in cash. It needed one place for customers to book and one place for staff to run it.",
     solution:
-      "One modelling engine behind a single workspace — shared calculation core, audit trail on every projection, real-time collaboration.",
+      "One catalogue API behind a public site, a native iOS and Android app and a staff admin. Guests check out by phone number, prices are set and converted server-side, cash at the Gombe office is the default with online payment behind a switch, and the admin runs inventory, orders and content with role-based access.",
     result:
-      "Plan turnaround dropped from days to the same afternoon, and compliance review stopped being a bottleneck.",
-    metrics: [
-      { value: "4→1", label: "Tools consolidated" },
-      { value: "12x", label: "Faster projections" },
-      { value: "99.95%", label: "Platform uptime" }
-    ],
-    stack: ["Next.js", "TypeScript", "PostgreSQL", "AWS"],
-    accent: "#8B5CF6"
+      "Every vertical books through the same order flow, and the team runs the whole operation from one panel.",
+    stack: ["Next.js", "React Native", "Node.js", "MongoDB"],
+    image: "/work/flexi-agency.webp",
+    links: [
+      { label: "Website", href: "https://flexiagency.net" },
+      {
+        label: "Google Play",
+        href: "https://play.google.com/store/apps/details?id=com.flexiagency.app"
+      },
+      {
+        label: "App Store",
+        href: "https://apps.apple.com/in/app/flexi-agency/id6807432056"
+      }
+    ]
   },
   {
     number: "02",
-    sector: "Travel",
-    title: "Multi-market booking engine",
+    sector: "Coaching",
+    title: "Coachiatry",
     summary:
-      "A booking platform serving eleven markets from one inventory system.",
+      "An accountability coaching platform for people with ADHD and executive dysfunction: from stuck to started, from doing to done.",
     problem:
-      "Each market ran its own fork. A pricing change took six weeks to roll out everywhere.",
+      "A coaching practice built on follow-through. Every session produces tasks, and the people it serves are exactly the people who lose track of tasks spread across meetings, chat and documents.",
     solution:
-      "A single tenanted engine with market-level configuration, edge-cached availability and a shared design system.",
+      "A shared workspace for coaches and clients with real-time chat, tasks, transcripts and documents; a browser extension that captures Google Meet sessions as they happen and turns them into action items with AI; and a native app so the list is always in a pocket.",
     result:
-      "Pricing and content changes now deploy to every market in a single release.",
-    metrics: [
-      { value: "11", label: "Markets, one codebase" },
-      { value: "6wk→1d", label: "Rollout time" },
-      { value: "180ms", label: "Median search" }
-    ],
-    stack: ["React", "Node.js", "MongoDB", "Docker"],
-    accent: "#A855F7"
+      "A session ends with its action items already assigned, and coach and client look at the same list on the web, in the extension and on the phone.",
+    stack: ["Next.js", "React Native", "Node.js", "LLM APIs"],
+    image: "/work/coachiatry.webp",
+    links: [
+      { label: "Web app", href: "https://app.coachiatry.com" },
+      {
+        label: "Google Play",
+        href: "https://play.google.com/store/apps/details?id=com.coachiatryapp"
+      },
+      {
+        label: "App Store",
+        href: "https://apps.apple.com/in/app/coachiatry/id6757945564"
+      }
+    ]
   },
   {
     number: "03",
-    sector: "Healthcare",
-    title: "Clinical operations suite",
+    sector: "Photography",
+    title: "SD Photography",
     summary:
-      "Scheduling, records and reporting for a distributed care network.",
+      "A wedding photography studio's portfolio and enquiry site, built to be run by the studio itself.",
     problem:
-      "Clinicians lost hours a week to duplicate entry across scheduling and records systems that never spoke to each other.",
+      "Couples find the studio on Instagram and compare photographers on a phone, months before the date. The work had to speak for itself, with no prices online and no developer on call for updates.",
     solution:
-      "An event-driven integration layer with a mobile-first clinical interface built around how rounds actually happen.",
+      "A phone-first site where the photographs lead: story albums with a full-screen viewer, every image served at three sizes with a blurred placeholder, and a plain admin where the studio publishes albums and edits every line of text. Enquiries open WhatsApp pre-filled and are saved too.",
     result:
-      "Documentation moved to the point of care, and reporting became a query instead of a project.",
-    metrics: [
-      { value: "-40%", label: "Admin time" },
-      { value: "HIPAA", label: "Audited pipeline" },
-      { value: "24/7", label: "Operational" }
-    ],
-    stack: ["React Native", "Python", "PostgreSQL", "AWS"],
-    accent: "#7C3AED"
+      "New stories go live within a minute of the studio publishing them, and every photograph arrives sized for the phone it is seen on.",
+    stack: ["Next.js", "Firebase", "Cloudinary"],
+    image: "/work/sd-photography.webp",
+    links: [{ label: "Website", href: "https://sdphotography.synkinnovations.in" }]
   },
   {
     number: "04",
-    sector: "Commerce",
-    title: "Intelligent merchandising",
+    sector: "Print",
+    title: "Yuvi Designs",
     summary:
-      "An AI layer that ranks and personalises a two-million-SKU catalogue.",
+      "A one-page site for a flex and digital print shop in Jind, Haryana, in business since 2018.",
     problem:
-      "Manual merchandising couldn't keep pace with the catalogue, so most inventory was effectively invisible.",
+      "A local print shop with a full catalogue of flex, vinyl, canvas and paper work, and nowhere online that said what it prints, which flex to ask for, or when it is open.",
     solution:
-      "A retrieval and ranking pipeline with an offline evaluation harness, shipped behind gradual rollout.",
+      "One hand-built page, no framework: the services, an animated look at four-ink printing, a plain guide to flex materials, and the address, hours and a tap-to-call button.",
     result:
-      "Long-tail inventory became discoverable without handing control of the storefront to a black box.",
-    metrics: [
-      { value: "2M", label: "SKUs ranked" },
-      { value: "+31%", label: "Discovery depth" },
-      { value: "<100ms", label: "Ranking latency" }
-    ],
-    stack: ["Python", "LLM APIs", "PostgreSQL", "Docker"],
-    accent: "#C4B5FD"
+      "It opens on any phone with nothing to maintain, and a customer arrives knowing what to ask for.",
+    stack: ["HTML", "CSS"],
+    image: "/work/yuvi-designs.webp",
+    links: [{ label: "Website", href: "https://yuvi-designs.vercel.app" }]
   }
 ] as const;
 
@@ -439,7 +444,7 @@ export const CONTACT = {
   lede: "Let's turn the idea into something real.",
   primaryCta: {
     label: "Start a conversation",
-    href: "mailto:hello@synkinnovations.com"
+    href: "mailto:anas@synkinnovations.in"
   },
   secondaryCta: { label: "View our capabilities", href: "#services" },
   responseNote: "We reply to every enquiry within two business days."
@@ -470,11 +475,11 @@ export const FOOTER = {
     {
       title: "Elsewhere",
       links: [
-        { label: "LinkedIn", href: "https://www.linkedin.com" },
-        { label: "GitHub", href: "https://github.com" },
+        { label: "LinkedIn", href: "https://www.linkedin.com/in/aannaassalam" },
+        { label: "GitHub", href: "https://github.com/aannaassalam" },
         {
-          label: "hello@synkinnovations.com",
-          href: "mailto:hello@synkinnovations.com"
+          label: "anas@synkinnovations.in",
+          href: "mailto:anas@synkinnovations.in"
         }
       ]
     }

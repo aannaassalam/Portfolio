@@ -1,3 +1,4 @@
+import dynamic from "next/dynamic";
 import Head from "next/head";
 import About from "@/components/site/About";
 import Architecture from "@/components/site/Architecture";
@@ -16,12 +17,17 @@ import TechStack from "@/components/site/TechStack";
 import Seo from "@/components/Seo/Seo";
 import { BRAND, HERO } from "@/json/site/content";
 
+const WorldCanvas = dynamic(() => import("@/components/three/WorldCanvas"), {
+  ssr: false
+});
+
 const SITE_URL = "https://www.synkinnovations.in";
 
 /**
  * Homepage narrative: problem → complexity → possibility → engineering →
  * product → scale → partnership → action. Each section is its own component;
- * this file only decides the order they're told in.
+ * this file only decides the order they're told in. One scene runs under all
+ * of them, and every section is a set of instructions to it.
  */
 export default function Home() {
   return (
@@ -41,6 +47,7 @@ export default function Home() {
 
       <SmoothScroll />
       <Cursor />
+      <WorldCanvas />
 
       <a
         href="#main"
@@ -51,7 +58,7 @@ export default function Home() {
 
       <Nav />
 
-      <main id="main">
+      <main id="main" className="relative z-10">
         <Hero />
         <Philosophy />
         <Services />

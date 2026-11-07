@@ -136,37 +136,8 @@
     padding-inline: clamp(1.25rem, 5vw, 5rem);
   }
 
-  /* Section seam. A flat 1px border across a full-bleed dark section reads as
-     a hard cut; this fades the line out at both ends and floats a faint violet
-     bloom above it, so the join reads as one surface changing depth.
-     Deliberately ::before — .grain already owns ::after on several sections. */
-  .seam {
-    position: relative;
-  }
-  .seam::before {
-    content: "";
-    position: absolute;
-    inset-inline: 0;
-    top: 0;
-    height: 160px;
-    pointer-events: none;
-    background:
-      linear-gradient(
-          90deg,
-          transparent,
-          var(--color-ink-600) 18%,
-          var(--color-ink-600) 82%,
-          transparent
-        )
-        top / 100% 1px no-repeat,
-      radial-gradient(
-        58% 100% at 50% 0%,
-        color-mix(in oklab, var(--color-violet-600) 11%, transparent),
-        transparent 72%
-      );
-  }
-
-  /* Grain sits above surfaces, below content — kills gradient banding on black. */
+  /* Grain over the sky, below content: kills gradient banding on black. Applied
+     once, to the fixed canvas layer, so it has no edges of its own. */
   .grain::after {
     content: "";
     position: absolute;
@@ -175,6 +146,19 @@
     opacity: 0.035;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
   }
+}
+
+/* A section that wants a little more ink behind its copy than the open sky
+   gives it. Feathered at both ends over a full viewport-sized run, so there is
+   never a line where one section stops and the next begins. */
+@utility veil {
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in oklab, var(--color-ink-900) 72%, transparent) 14rem,
+    color-mix(in oklab, var(--color-ink-900) 72%, transparent) calc(100% - 14rem),
+    transparent
+  );
 }
 
 /* Reveal primitives.

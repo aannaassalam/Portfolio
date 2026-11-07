@@ -1,5 +1,6 @@
 import { PRINCIPLES, TRUST } from "@/json/site/content";
 import { revealChildren, useGsapScope } from "@/lib/motion";
+import { claimPhase, world } from "@/lib/three/world";
 import GlowCard from "@/ui/GlowCard/GlowCard";
 import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 
@@ -8,13 +9,17 @@ import SectionIntro from "@/ui/SectionIntro/SectionIntro";
  * how a system is built, not a wall of numbers nobody can verify.
  */
 export default function Principles() {
-  const scope = useGsapScope<HTMLElement>(
-    ({ scope }) => revealChildren(scope),
-    []
-  );
+  const scope = useGsapScope<HTMLElement>(({ scope }) => {
+    revealChildren(scope);
+    // Out of the city; the scattered system is back overhead, ready to be
+    // the core again by the time the closing section asks.
+    claimPhase(scope, "ascend", () => {
+      world.formation = "core";
+    });
+  }, []);
 
   return (
-    <section ref={scope} className="seam bg-ink-950 py-28 md:py-36">
+    <section ref={scope} className="py-28 md:py-36">
       <div className="shell">
         <SectionIntro
           eyebrow="Engineering standards"

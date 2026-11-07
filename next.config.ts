@@ -9,7 +9,9 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "*"
       }
-    ]
+    ],
+    // The case-study screenshots are photographic; the default 75 smears them.
+    qualities: [75, 90]
   },
   compress: true,
   compiler: {

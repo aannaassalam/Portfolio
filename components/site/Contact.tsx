@@ -1,32 +1,34 @@
-import dynamic from "next/dynamic";
-import { useRef } from "react";
 import { CONTACT } from "@/json/site/content";
 import { gsap, useGsapScope } from "@/lib/motion";
+import { claimPhase, world } from "@/lib/three/world";
 import Cta from "@/ui/Cta/Cta";
 
-const HeroCanvas = dynamic(() => import("@/components/three/HeroCanvas"), {
-  ssr: false
-});
-
 /**
- * The convergence. This is deliberately the hero's scene run backwards —
+ * The convergence. This is deliberately the hero's motion run backwards —
  * the scattered system pulling itself back into one structure — because the
  * page's argument is that we take things apart and put them back together.
  */
 export default function Contact() {
-  const dispersion = useRef(1);
-
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
-    gsap.to(dispersion, {
-      current: 0,
-      ease: "none",
-      scrollTrigger: {
-        trigger: scope,
-        start: "top bottom",
-        end: "center center",
-        scrub: 0.8
-      }
+    claimPhase(scope, "return", () => {
+      world.formation = "core";
     });
+
+    gsap.fromTo(
+      world,
+      { dispersion: 1 },
+      {
+        dispersion: 0,
+        ease: "none",
+        immediateRender: false,
+        scrollTrigger: {
+          trigger: scope,
+          start: "top bottom",
+          end: "center center",
+          scrub: 0.8
+        }
+      }
+    );
 
     gsap.fromTo(
       scope.querySelectorAll("[data-cta-item]"),
@@ -44,12 +46,11 @@ export default function Contact() {
   }, []);
 
   return (
-    <section ref={scope} id="contact" className="relative seam bg-ink-950">
+    <section ref={scope} id="contact" className="relative">
       <div className="relative flex min-h-screen items-center overflow-hidden py-28">
-        <div className="pointer-events-none absolute inset-0">
-          <HeroCanvas dispersion={dispersion} />
-        </div>
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_35%,#050505_82%)]" />
+        {/* A soft pool of dark behind the copy only: the core reassembles
+            around the words, and the words stay the brightest thing. */}
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(5,5,5,0.7)_0%,rgba(5,5,5,0.35)_38%,transparent_68%)]" />
 
         <div className="shell relative w-full text-center">
           <p className="eyebrow" data-cta-item>

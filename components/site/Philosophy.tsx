@@ -2,6 +2,7 @@ import { useMemo, useRef } from "react";
 import { PHILOSOPHY } from "@/json/site/content";
 import { gsap, revealChildren, useGsapScope } from "@/lib/motion";
 import { seededRandom } from "@/lib/three/formations";
+import { claimPhase } from "@/lib/three/world";
 import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 
 const COLUMNS = 4;
@@ -55,6 +56,8 @@ export default function Philosophy() {
 
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
     revealChildren(scope);
+    // The 3D system loosens into a starfield behind this section's own network.
+    claimPhase(scope, "drift");
 
     const draw = (p: number) => {
       // Ease per-node so the structure snaps together back-to-front.
@@ -131,7 +134,7 @@ export default function Philosophy() {
   return (
     <section
       ref={scope}
-      className="grain relative overflow-hidden bg-ink-950 py-28 md:py-40"
+      className="relative overflow-hidden py-28 md:py-40"
     >
       <div className="shell">
         <SectionIntro

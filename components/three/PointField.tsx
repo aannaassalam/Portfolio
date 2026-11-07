@@ -37,18 +37,27 @@ const fragmentShader = /* glsl */ `
     float alpha = smoothstep(0.5, 0.0, d);
     vec3 color = mix(uColorA, uColorB, clamp(vScale, 0.0, 1.0));
     gl_FragColor = vec4(color, alpha * alpha * uOpacity);
+    // Colours are authored in sRGB and handed over linear; encode on the way
+    // out so the points match whether or not a composer sits in front.
+    #include <colorspace_fragment>
   }
 `;
 
 interface PointFieldProps {
   count: number;
-  /** Formation the cloud settles into. Changing it animates the morph. */
-  formation: FormationName;
+  /**
+   * Formation the cloud settles into, read every frame from a ref so the
+   * scene can change it without re-rendering React. Changing it animates
+   * the morph.
+   */
+  formation: RefObject<FormationName>;
   /**
    * 0–1 blend toward the scattered state, read every frame from a ref so
    * scroll can drive it without re-rendering React.
    */
   dispersion?: RefObject<number>;
+  /** 0–1 presence; multiplies every opacity the field owns. */
+  presence?: RefObject<number>;
   /** Start scattered and assemble into `formation` on mount. */
   assemble?: boolean;
   edges?: boolean;
@@ -75,6 +84,7 @@ export default function PointField({
   count,
   formation,
   dispersion,
+  presence,
   assemble = false,
   edges = false,
   size = 7,
@@ -88,6 +98,7 @@ export default function PointField({
 }: PointFieldProps) {
   const positionAttr = useRef<THREE.BufferAttribute>(null);
   const edgeAttr = useRef<THREE.BufferAttribute>(null);
+  const edgeMat = useRef<THREE.LineBasicMaterial>(null);
   const material = useRef<THREE.ShaderMaterial>(null);
 
   // Formation targets, built on first use and kept for the component's life.
@@ -96,7 +107,10 @@ export default function PointField({
 
   // Morph state: 1 means settled. Reset to 0 whenever the target shape changes.
   const settled = useRef(1);
-  const currentShape = useRef<FormationName>(formation);
+  const currentShape = useRef<FormationName>(formation.current);
+  // Neighbour edges are wired for the core. Drawn over any other shape they
+  // are a hairball, so they fade with the shape rather than with the points.
+  const edgeFade = useRef(formation.current === "core" ? 1 : 0);
 
   const scattered = useMemo(
     () => buildFormation("scatter", count, seed + 7),
@@ -117,14 +131,14 @@ export default function PointField({
 
     return {
       positions: Float32Array.from(
-        assemble ? scattered : buildFormation(formation, count, seed)
+        assemble ? scattered : buildFormation(formation.current, count, seed)
       ),
       scales,
       pairs,
       edgePositions: new Float32Array(pairs.length * 3)
     };
-    // `formation` sets the starting shape only — changing it should morph the
-    // existing points, not rebuild the geometry underneath them.
+    // The formation ref sets the starting shape only — later changes morph
+    // the existing points, not rebuild the geometry underneath them.
   }, [count, seed, edges, assemble, scattered]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const uniforms = useMemo(
@@ -147,21 +161,23 @@ export default function PointField({
     const blend = 1 - Math.exp(-lambda * dt);
     const spread = Math.min(Math.max(dispersion?.current ?? 0, 0), 1);
     const flow = Math.min(Math.max(energy?.current ?? 0, 0), 1);
+    const here = Math.min(Math.max(presence?.current ?? 1, 0), 1);
+    const shape = formation.current;
     const live = attr.array as Float32Array;
 
     const cache = bases.current;
-    let base = cache.get(formation);
+    let base = cache.get(shape);
     // Length check also covers the device tier changing the particle count.
     if (!base || base.length !== live.length) {
-      base = buildFormation(formation, count, seed);
-      cache.set(formation, base);
+      base = buildFormation(shape, count, seed);
+      cache.set(shape, base);
     }
 
     // A formation change travels through an outward bulge rather than sliding
     // straight to the target — a straight lerp between two shapes reads as a
     // cross-fade, not as one system becoming another.
-    if (currentShape.current !== formation) {
-      currentShape.current = formation;
+    if (currentShape.current !== shape) {
+      currentShape.current = shape;
       settled.current = 0;
     }
     settled.current = Math.min(1, settled.current + dt / MORPH_SECONDS);
@@ -200,12 +216,19 @@ export default function PointField({
       }
       edgeAttr.current.needsUpdate = true;
     }
+    // Edges stretch as the cloud scatters; thin them so the starfield behind
+    // body copy stays a starfield rather than a web.
+    edgeFade.current += ((shape === "core" ? 1 : 0) - edgeFade.current) * blend;
+    if (edgeMat.current) {
+      edgeMat.current.opacity =
+        0.16 * here * edgeFade.current * (1 - spread * 0.7);
+    }
 
     if (material.current) {
       const u = material.current.uniforms;
       u.uTime.value += dt;
       // Edges only read as structure while the system is organised.
-      u.uOpacity.value = opacity * (1 - spread * 0.45);
+      u.uOpacity.value = opacity * (1 - spread * 0.45) * here;
       // Points thicken slightly with scroll speed, like a longer exposure.
       u.uSize.value = size * (1 + flow * 0.4);
     }
@@ -213,7 +236,7 @@ export default function PointField({
 
   return (
     <group>
-      <points>
+      <points frustumCulled={false}>
         <bufferGeometry>
           <bufferAttribute
             ref={positionAttr}
@@ -234,7 +257,7 @@ export default function PointField({
       </points>
 
       {edges && pairs.length > 0 && (
-        <lineSegments>
+        <lineSegments frustumCulled={false}>
           <bufferGeometry>
             <bufferAttribute
               ref={edgeAttr}
@@ -243,6 +266,7 @@ export default function PointField({
             />
           </bufferGeometry>
           <lineBasicMaterial
+            ref={edgeMat}
             color="#8B5CF6"
             transparent
             opacity={0.16}

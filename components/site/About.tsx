@@ -1,5 +1,6 @@
 import { ABOUT } from "@/json/site/content";
 import { gsap, revealChildren, useGsapScope } from "@/lib/motion";
+import { claimPhase, world } from "@/lib/three/world";
 import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 
 /**
@@ -10,6 +11,9 @@ import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 export default function About() {
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
     revealChildren(scope);
+    claimPhase(scope, "ascend", () => {
+      world.formation = "core";
+    });
 
     gsap.fromTo(
       scope.querySelectorAll("[data-term]"),
@@ -47,7 +51,7 @@ export default function About() {
     <section
       ref={scope}
       id="about"
-      className="grain relative overflow-hidden seam bg-ink-900 py-28 md:py-40"
+      className="veil relative overflow-hidden py-28 md:py-40"
     >
       <div className="shell">
         <SectionIntro

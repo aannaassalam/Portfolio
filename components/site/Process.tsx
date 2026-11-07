@@ -1,6 +1,7 @@
 import { PROCESS } from "@/json/site/content";
 import { cx } from "@/lib/utils";
 import { gsap, revealChildren, useGsapScope } from "@/lib/motion";
+import { claimPhase } from "@/lib/three/world";
 import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 
 /**
@@ -10,6 +11,8 @@ import SectionIntro from "@/ui/SectionIntro/SectionIntro";
 export default function Process() {
   const scope = useGsapScope<HTMLElement>(({ scope }) => {
     revealChildren(scope);
+    // The camera turns toward the city here, so the flythrough starts moving.
+    claimPhase(scope, "transit");
 
     gsap.fromTo(
       scope.querySelector("[data-rail]"),
@@ -56,7 +59,7 @@ export default function Process() {
     <section
       ref={scope}
       id="process"
-      className="grain relative overflow-hidden seam bg-ink-900 py-28 md:py-40"
+      className="veil relative overflow-hidden py-28 md:py-40"
     >
       <div className="shell">
         <SectionIntro

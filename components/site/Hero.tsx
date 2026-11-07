@@ -1,23 +1,15 @@
-import dynamic from "next/dynamic";
-import { useRef } from "react";
 import { COMPLEXITY, HERO } from "@/json/site/content";
 import { gsap, useGsapScope } from "@/lib/motion";
+import { claimPhase, world } from "@/lib/three/world";
 import Cta from "@/ui/Cta/Cta";
 
-const HeroCanvas = dynamic(() => import("@/components/three/HeroCanvas"), {
-  ssr: false
-});
-
 /**
- * Act one. The hero and the two "complexity" statements share one sticky
- * canvas, because they're one idea: an organised system, taken apart, and
- * put back together simpler. Splitting them into separate sections would
- * mean two 3D objects telling half a story each.
+ * Act one. The hero and the two "complexity" statements are one idea: an
+ * organised system, taken apart, and put back together simpler. The object
+ * itself lives in the page-wide scene; this act only tells it how far apart
+ * to be.
  */
 export default function Hero() {
-  // Read by the render loop every frame; deliberately not React state.
-  const dispersion = useRef(0);
-
   const act = useGsapScope<HTMLDivElement>(({ scope }) => {
     // fromTo, not from: the start state is already set in CSS, so `from()`
     // would read the CSS-hidden values as its destination and animate to
@@ -48,8 +40,9 @@ export default function Hero() {
       );
 
     // Scroll choreography across the whole act: the system disperses through
-    // the first statement, then resolves — tighter than it started.
-    gsap
+    // the first statement, then resolves — tighter than it started. Written
+    // straight into the world; the scene reads it every frame.
+    const scrub = gsap
       .timeline({
         scrollTrigger: {
           trigger: scope,
@@ -58,8 +51,19 @@ export default function Hero() {
           scrub: 0.7
         }
       })
-      .to(dispersion, { current: 1, duration: 1.3, ease: "none" })
-      .to(dispersion, { current: 0.06, duration: 1, ease: "power2.inOut" });
+      .fromTo(
+        world,
+        { dispersion: 0 },
+        { dispersion: 1, duration: 1.3, ease: "none", immediateRender: false }
+      )
+      .to(world, { dispersion: 0.06, duration: 1, ease: "power2.inOut" });
+
+    claimPhase(scope, "hero", () => {
+      world.formation = "core";
+      // Re-entering from below: land on the scrub's resting value rather than
+      // on whatever the section after us asked for.
+      if (scrub.progress() >= 1) world.dispersion = 0.06;
+    });
 
     gsap.to(scope.querySelector("[data-hero-copy]"), {
       opacity: 0,
@@ -103,12 +107,10 @@ export default function Hero() {
 
   return (
     <div ref={act} className="relative">
-      {/* One canvas for the whole act; it outlives both copy blocks. */}
+      {/* Sticky scrim for the whole act. Narrow viewports park the object
+          under the copy, so the copy has to win over it at every scroll. */}
       <div className="pointer-events-none sticky top-0 h-screen w-full">
-        <HeroCanvas dispersion={dispersion} />
-        {/* Scrims: the copy has to win over the scene at every width. */}
         <div className="absolute inset-0 bg-[linear-gradient(to_bottom,#050505_20%,rgba(5,5,5,0.82)_52%,transparent_86%)] lg:hidden" />
-        <div className="absolute inset-x-0 bottom-0 h-64 bg-linear-to-t from-ink-950 to-transparent" />
       </div>
 
       <section
