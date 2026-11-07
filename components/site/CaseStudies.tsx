@@ -162,19 +162,24 @@ export default function CaseStudies() {
         }
       });
 
-      // Panels animate against horizontal travel, not vertical scroll.
-      rail.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel) => {
+      // Panels animate against horizontal travel, not vertical scroll. The
+      // first panel is the exception: it is on screen the moment the run
+      // begins, and a jump to #work lands exactly there, where the rail has
+      // not moved yet and a trigger tied to its travel never fires. So the
+      // first panel reveals with the section instead.
+      rail.querySelectorAll<HTMLElement>("[data-panel]").forEach((panel, index) => {
+        const arrival = (start: string, travel: string) =>
+          index === 0
+            ? { trigger: scope, start }
+            : { trigger: panel, containerAnimation: horizontal, start: travel };
+
         gsap.from(panel.querySelectorAll("[data-panel-item]"), {
           opacity: 0,
           y: 28,
           duration: 0.9,
           stagger: 0.08,
           ease: "expo.out",
-          scrollTrigger: {
-            trigger: panel,
-            containerAnimation: horizontal,
-            start: "left 72%"
-          }
+          scrollTrigger: arrival("top 80%", "left 72%")
         });
 
         gsap.from(panel.querySelector("[data-panel-visual]"), {
@@ -182,11 +187,7 @@ export default function CaseStudies() {
           opacity: 0,
           duration: 1.2,
           ease: "expo.out",
-          scrollTrigger: {
-            trigger: panel,
-            containerAnimation: horizontal,
-            start: "left 85%"
-          }
+          scrollTrigger: arrival("top 70%", "left 85%")
         });
       });
     });
@@ -197,28 +198,28 @@ export default function CaseStudies() {
   return (
     <section ref={scope} id="work" className="relative">
       <div ref={stage} className="relative overflow-hidden lg:h-screen">
-      {/* Pinned above the rail on lg, so it condenses to a single line —
+        {/* Pinned above the rail on lg, so it condenses to a single line —
           a full-size heading would eat the panel's vertical budget. */}
-      <div className="shell pb-10 pt-28 lg:absolute lg:left-0 lg:right-0 lg:top-0 lg:z-10 lg:flex lg:items-baseline lg:gap-5 lg:pb-0 lg:pt-24">
-        <p className="eyebrow" data-reveal>
-          Selected work
-        </p>
-        <h2
-          className="mt-5 text-[clamp(2rem,4.4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.03em] lg:mt-0 lg:text-xl"
-          data-reveal
-        >
-          Ideas, engineered.
-        </h2>
-      </div>
+        <div className="shell pb-10 pt-28 lg:absolute lg:left-0 lg:right-0 lg:top-0 lg:z-10 lg:flex lg:items-baseline lg:gap-5 lg:pb-0 lg:pt-24">
+          <p className="eyebrow" data-reveal>
+            Selected work
+          </p>
+          <h2
+            className="mt-5 text-[clamp(2rem,4.4vw,3.5rem)] font-medium leading-[1.05] tracking-[-0.03em] lg:mt-0 lg:text-xl"
+            data-reveal
+          >
+            Ideas, engineered.
+          </h2>
+        </div>
 
-      <div
-        ref={track}
-        className="flex flex-col gap-24 pb-28 lg:h-screen lg:flex-row lg:gap-0 lg:pb-0 lg:pt-32"
-      >
-        {CASE_STUDIES.map((study) => (
-          <Panel key={study.number} study={study} />
-        ))}
-      </div>
+        <div
+          ref={track}
+          className="flex flex-col gap-24 pb-28 lg:h-screen lg:flex-row lg:gap-0 lg:pb-0 lg:pt-32"
+        >
+          {CASE_STUDIES.map((study) => (
+            <Panel key={study.number} study={study} />
+          ))}
+        </div>
       </div>
     </section>
   );
